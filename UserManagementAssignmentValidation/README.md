@@ -1,24 +1,29 @@
-# <h1 align="center"> URL Hit Counter </h1>
+# <h1 align = "center"> User Management System </h1>
+___ 
 <p align="center">
-  <a href="Java url">
+<a href="Java url">
     <img alt="Java" src="https://img.shields.io/badge/Java->=8-darkblue.svg" />
-  </a>
-  <a href="Maven url" >
+</a>
+<a href="Maven url" >
     <img alt="Maven" src="https://img.shields.io/badge/maven-4.0-brightgreen.svg" />
-  </a>
-  <a href="Spring Boot url" >
-    <img alt="Spring Boot" src="https://img.shields.io/badge/Spring Boot-3.1.3-brightgreen.svg" />
-  </a>
-   <img alt = "GPL v3" src="https://img.shields.io/badge/License-GPLv3-blue.svg" />
+</a>
+<a href="Spring Boot url" >
+    <img alt="Spring Boot" src="https://img.shields.io/badge/Spring Boot-3.1.1-brightgreen.svg" />
+</a>
+    <a href="License url" >
+    <img alt = "GPL v3" src="https://img.shields.io/badge/License-GPLv3-blue.svg" />
+    </a>
 </p>
+
 
 ---
 
 <p align="left">
 
+
 ## Overview
 
-The URL Hit Counter is a simple Spring Boot application that allows you to track the number of times a specific URL endpoint has been accessed. It also provides an additional feature to track hit counts for different usernames.
+This project, named "User Management," is a robust Spring Boot application designed for managing user data efficiently. It provides a set of RESTful API endpoints that allow you to perform various operations on user records, such as adding, retrieving, updating, and deleting user information. 
 
 ## Technologies Used
 
@@ -28,157 +33,187 @@ The URL Hit Counter is a simple Spring Boot application that allows you to track
 
 ## Data Flow
 
-The URL Hit Counter application follows a structured data flow pattern to handle requests and manage data efficiently:
-
 ### Controller
 
-The Controller layer is responsible for handling incoming HTTP requests and delegating them to the appropriate services. It defines API endpoints for various operations, including adding visitors, retrieving hit counts, and updating counts for specific users. Each endpoint maps to a specific service method to ensure proper request handling and response generation.
+The Controller layer is responsible for handling incoming HTTP requests and delegating them to the appropriate services. It defines API endpoints for the following operations:
+
+1. **Add User:** `POST /user`
+2. **Add Users:** `POST /users`
+3. **Get All Users:** `GET /users`
+4. **Get User by ID:** `GET /user/{userID}`
+5. **Update User Phone Number:** `PUT /user/{userID}/number/{phoneNumber}`
+6. **Update User Address:** `PUT /user/{userID}/address/{email}`
+7. **Delete User by ID:** `DELETE /user/{userID}`
 
 ```java
 @RestController
-@RequestMapping("/api/v1/visitor-count-app")
-public class UrlHitController {
+@Validated
+public class UserController {
     @Autowired
-    private UrlHitService urlHitService;
+    UserService userService;
 
-    // Endpoint mappings for various operations
+    // Add a user
+    @PostMapping("user")
+    public String addUser(@Valid @RequestBody User user) {
+        return userService.inputUser(user);
+    }
+
+    // Get all users
+    @GetMapping("users")
+    public List<User> getAllUsers() {
+        return userService.getAllUser();
+    }
+
     // ...
 }
 ```
 
-### Service
+## Services
 
-The Service layer encapsulates the core business logic and data processing. It interacts with the Repository layer to retrieve and store data. In this application, it handles operations like adding visitors, retrieving hit counts, and updating counts for users. The Service layer validates input data and performs necessary operations before returning results to the Controller.
+The Services layer implements the core business logic, data processing, and interaction with the data repository. Key responsibilities include:
+
+- Validating input data.
+- Performing CRUD operations on user data.
+- Handling data transformations and interactions with external systems (if applicable).
 
 ```java
 @Service
-public class UrlHitService {
+public class UserService {
     @Autowired
-    private UrlHitRepo urlHitRepo;
+    UserRepo userRepo;
 
-    // Service methods for various operations
+    public List<User> getAllUser() {
+        return userRepo.getUsers();
+    }
+
     // ...
 }
 ```
 
-### Repository
+## Repository
 
-The Repository layer manages data access to in-memory storage. It maintains a list of `UrlHitCounter` objects to store hit counts for visitors. While this in-memory storage is suitable for a simple application, in a production environment, a database should be used for data persistence.
+The Repository layer manages data access to the underlying database. It handles database operations such as Create, Read, Update, and Delete (CRUD) for user data. Additionally, it may include data mapping and conversion between Java objects and database entities.
 
 ```java
 @Repository
-public class UrlHitRepo {
+public class UserRepo {
     @Autowired
-    private List<UrlHitCounter> urlHitCounterList;
+    private List<User> userList;
 
-    // Repository methods for managing visitor data
+    public List<User> getUsers() {
+        return userList;
+    }
+
     // ...
 }
 ```
 
+
 ## Database Design
 
-The URL Hit Counter application utilizes a simple in-memory data structure to store hit counts. In a production environment, it is advisable to replace this in-memory storage with a relational or NoSQL database for better data persistence and scalability.
+The project's database design includes tables for user management, with fields such as:
 
-### In-Memory Data Structure
+- `userId` (User ID)
+- `userName` (User Name)
+- `type` (User Type)
+- `userEmail` (Email Address)
+- `userContactNo` (Phone Number)
+- `dob` (Date of Birth)
+- Timestamps for record creation and modification
 
-The primary data structure used in this application is a `List` of `UrlHitCounter` objects. Each `UrlHitCounter` object represents a visitor and their hit count. This structure allows for easy manipulation of hit counts but is not suitable for long-term data storage.
+### User Table
 
-```java
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class UrlHitCounter {
-    private String userName;
-    private Integer counter;
-}
-```
+| Column Name    | Data Type      | Description                        |
+| -------------- | -------------- | ---------------------------------- |
+| userId         | INT            | Unique identifier for each user    |
+| userName       | VARCHAR(255)   | User's full name                   |
+| type           | ENUM           | User type (ADMIN, INTERNAL, EXTERNAL) |
+| userEmail      | VARCHAR(255)   | User's email address               |
+| userContactNo  | VARCHAR(12)    | User's phone number (e.g., 911234567890) |
+| dob            | DATE           | User's date of birth               |
+| created_at     | TIMESTAMP      | Timestamp of record creation       |
+| updated_at     | TIMESTAMP      | Timestamp of record modification   |
+
+The "User" table stores user-related information, including user IDs, names, types, contact information, date of birth, and timestamps for record creation and modification.
+
+This database design ensures data integrity and provides a structured approach to managing user information within the application.
+
 
 ## Data Structures Used
 
-### List
+The project utilizes the following data structures:
 
-The application utilizes the Java `List` data structure to maintain a collection of `UrlHitCounter` objects. This dynamic data structure allows for the storage and retrieval of visitor hit counts. However, please note that this implementation is limited to in-memory storage and is not suitable for persisting data in a production environment.
+### User Class
 
-```java
-@Bean
-public List<UrlHitCounter> getUrlHitCounterList(){
-    return new ArrayList<>();
-}
-```
+The `User` class defines the structure for user data and includes the following fields:
 
-### UrlHitCounter Class
+- `userId` (User ID): An integer that serves as a unique identifier for each user.
+- `userName` (User Name): A string representing the user's full name.
+- `type` (User Type): An enumeration specifying the user type, including ADMIN, INTERNAL, and EXTERNAL.
+- `userEmail` (Email Address): A string containing the user's email address.
+- `userContactNo` (Phone Number): A string representing the user's phone number (e.g., 911234567890).
+- `dob` (Date of Birth): A date field indicating the user's date of birth.
+- Timestamps for record creation and modification.
 
-The `UrlHitCounter` class defines the structure for storing visitor information. It includes two fields: `userName` (to identify the visitor) and `counter` (to track the hit count for that visitor). Instances of this class are used to represent visitors and manage their hit counts.
+### Type Enum
 
-```java
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class UrlHitCounter {
-    private String userName;
-    private Integer counter;
-}
-```
+The `Type` enum enumerates the possible user types:
+
+- `ADMIN`: Represents an administrator user.
+- `INTERNAL`: Represents an internal user.
+- `EXTERNAL`: Represents an external user.
+
+### ArrayList
+
+The project utilizes the `ArrayList` data structure to store and manage lists of `User` objects in various parts of the application. `ArrayList` provides dynamic sizing and efficient element retrieval, making it suitable for storing user records and performing operations on them.
+
+These data structures enable the application to organize and manipulate user data efficiently while maintaining data integrity.
 
 
-## Endpoints
+## Project Summary
 
-### Get Total Hit Count
-- **Endpoint**: `/api/v1/count`
-- **HTTP Method**: GET
-- **Description**: Retrieves the total hit count for the default URL.
+The User Management project is a robust Spring Boot application designed for efficient user data management. It offers a set of RESTful API endpoints for various user-related operations, including adding, retrieving, updating, and deleting user information.
 
-### Get Hit Count for a Specific User
-- **Endpoint**: `/api/v1/username/{username}/count`
-- **HTTP Method**: GET
-- **Description**: Retrieves the hit count for a specific user identified by `{username}`.
+### Key Technologies Used
 
-### Add a New Visitor
-- **Endpoint**: `/visitor`
-- **HTTP Method**: POST
-- **Description**: Adds a new visitor to the system.
+- **Framework:** Spring Boot
+- **Language:** Java
+- **Build Tool:** Maven
 
-### Get All Visitors
-- **Endpoint**: `/visitors`
-- **HTTP Method**: GET
-- **Description**: Retrieves a list of all visitors and their hit counts.
+### Data Flow
 
-### Get the Number of Visitors
-- **Endpoint**: `/visitor/count`
-- **HTTP Method**: GET
-- **Description**: Retrieves the total number of visitors.
+#### Controller
 
-### Increment Hit Count for a Specific User
-- **Endpoint**: `/api/v1/count_update/username/{username}`
-- **HTTP Method**: PUT
-- **Description**: Increments the hit count for a specific user identified by `{username}`.
+The Controller layer handles incoming HTTP requests and routes them to the appropriate services. It defines API endpoints for operations such as adding, retrieving, updating, and deleting user records.
 
-## Usage
+#### Services
 
-1. Use a tool like [Postman](https://www.postman.com/) to make HTTP requests to the provided endpoints.
+The Services layer implements core business logic and data processing, including input validation, CRUD operations on user data, and data transformations.
 
-2. Create visitors using the "Add a New Visitor" endpoint with a POST request.
+#### Repository
 
-3. Retrieve hit counts and manage visitors using the provided endpoints.
+The Repository layer manages data access to the underlying database, performing Create, Read, Update, and Delete (CRUD) operations for user data.
 
-## Project Structure
+#### Database Design
 
-The project follows a standard Spring Boot application structure with components organized into layers:
+The database design includes tables for user management, featuring fields like `userId`, `userName`, `type`, `userEmail`, `userContactNo`, `dob`, and timestamps for record creation and modification.
 
-- **Controller:** Handles incoming HTTP requests and defines API endpoints.
-- **Service:** Implements business logic and interacts with the repository.
-- **Repository:** Manages data access and storage.
-- **Entity:** Defines data models.
-- **BeanManager:** Contains Spring bean configurations.
+### Data Structures Used
 
-## Data Storage
+- **User Class:** Defines the structure for user data, including user attributes and timestamps.
+- **Type Enum:** Enumerates user types, such as ADMIN, INTERNAL, and EXTERNAL.
+- **ArrayList:** Utilized for managing lists of `User` objects efficiently.
 
-Visitor hit counts are stored in-memory using a `List`. In a production environment, you should consider using a database for data persistence.
 
-## Contributing
+### Key Features
 
-Contributions to this project are welcome! If you have any suggestions, find issues, or want to enhance the functionality, please feel free to open an issue or submit a pull request.
+- RESTful API endpoints for user management.
+- Data validation to ensure data integrity.
+- Clean code separation with a layered architecture (Controller, Services, Repository).
+- Robust error handling for improved reliability.
+- Java-based backend and Maven for build management.
+
+The User Management project serves as a practical example of Spring Boot application development, demonstrating best practices in API design and user data management. It offers a solid foundation for building and extending user management systems in various applications.
 
 <!-- License -->
 ## License
@@ -190,5 +225,5 @@ Thank you to the Spring Boot and Java communities for providing excellent tools 
 
 <!-- Contact -->
 ## Contact
-For questions or feedback, please contact [Amit Ashok Swain](mailto:business.amitswain@gmail.com).
+For questions or feedback, please contact [ROHIT SINGH BISHT](mailto:business.rohitbisht3502@gmail.com).
 
